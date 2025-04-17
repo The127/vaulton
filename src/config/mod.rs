@@ -1,4 +1,5 @@
 use serde::Deserialize;
+use std::error::Error;
 
 /// Main configuration structure for the Vaulton server
 #[derive(Debug, Deserialize)]
@@ -32,6 +33,12 @@ impl Default for ServerConfig {
             port: 3000,
         }
     }
+}
+
+/// Trait for loading static configuration from different sources
+pub trait ConfigSource {
+    /// Apply configuration from this source to the given config
+    fn apply(&self, config: &mut Config) -> Result<(), Box<dyn Error>>;
 }
 
 #[cfg(test)]
