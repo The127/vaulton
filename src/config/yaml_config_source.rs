@@ -2,7 +2,7 @@ use std::path::Path;
 use std::error::Error;
 
 use crate::config::Config;
-use crate::fs::FileSystem;
+use crate::utils::fs::FileSystem;
 use crate::utils::merge::Merge;
 
 /// Configuration source that loads settings from a YAML file
@@ -50,7 +50,7 @@ impl<FS: FileSystem> super::ConfigSource for YamlConfigSource<FS> {
 mod tests {
     use super::*;
     use crate::config::ConfigSource;
-    use crate::fs::mock_file_system::MockFileSystem;
+    use crate::utils::fs::mock_file_system::MockFileSystem;
 
     #[test]
     fn test_valid_yaml_config() {
