@@ -25,13 +25,13 @@ impl Error for EnvError {}
 /// Trait defining operations for environment variables
 pub trait Env: Send + Sync {
     /// Set an environment variable
-    fn set_var(&self, key: &str, value: &str) -> Result<(), EnvError>;
+    fn set_var(&mut self, key: &str, value: &str) -> Result<(), EnvError>;
 
     /// Get an environment variable
-    fn get_var(&self, key: &str) -> Result<String, EnvError>;
+    fn get_var(&mut self, key: &str) -> Result<String, EnvError>;
 
     /// Remove an environment variable
-    fn remove_var(&self, key: &str) -> Result<(), EnvError>;
+    fn remove_var(&mut self, key: &str) -> Result<(), EnvError>;
 }
 
 /// Implementation of Env that uses the system environment
@@ -39,16 +39,16 @@ pub trait Env: Send + Sync {
 pub struct SystemEnv;
 
 impl Env for SystemEnv {
-    fn set_var(&self, key: &str, value: &str) -> Result<(), EnvError> {
+    fn set_var(&mut self, key: &str, value: &str) -> Result<(), EnvError> {
         env::set_var(key, value);
         Ok(())
     }
 
-    fn get_var(&self, key: &str) -> Result<String, EnvError> {
+    fn get_var(&mut self, key: &str) -> Result<String, EnvError> {
         env::var(key).map_err(|e| EnvError::GetError(e.to_string()))
     }
 
-    fn remove_var(&self, key: &str) -> Result<(), EnvError> {
+    fn remove_var(&mut self, key: &str) -> Result<(), EnvError> {
         env::remove_var(key);
         Ok(())
     }
@@ -60,14 +60,14 @@ mod tests {
 
     #[test]
     fn test_set_and_get_var() {
-        let env = SystemEnv::default();
+        let mut env = SystemEnv::default();
         env.set_var("TEST_KEY", "test_value").unwrap();
         assert_eq!(env.get_var("TEST_KEY").unwrap(), "test_value");
     }
 
     #[test]
     fn test_remove_var() {
-        let env = SystemEnv::default();
+        let mut env = SystemEnv::default();
         env.set_var("TEST_KEY_REMOVE", "test_value").unwrap();
         env.remove_var("TEST_KEY_REMOVE").unwrap();
         assert!(env.get_var("TEST_KEY_REMOVE").is_err());
@@ -75,7 +75,7 @@ mod tests {
 
     #[test]
     fn test_get_nonexistent_var() {
-        let env = SystemEnv::default();
+        let mut env = SystemEnv::default();
         assert!(env.get_var("NONEXISTENT_KEY").is_err());
     }
 }
