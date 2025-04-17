@@ -13,7 +13,7 @@ impl<E: Env> EnvConfigSource<E> {
     pub fn new(env: E) -> Self {
         Self {
             env,
-            prefix: "VAULTON_".to_string(),
+            prefix: "VAULTON__".to_string(),
         }
     }
 
@@ -26,11 +26,14 @@ impl<E: Env> EnvConfigSource<E> {
             let env_key = format!(
                 "{}{}",
                 self.prefix,
-                path.path.replace('.', "_").to_uppercase()
+                path.path.replace('.', "__").to_uppercase()
             );
 
             if let Ok(value) = self.env.get_var(&env_key) {
-                vars.insert(path.path, value);
+                // Transform the path back to what envy expects
+                // For example: "server.bind_addr" -> "SERVER_BIND_ADDR"
+                let envy_key = path.path.replace('.', "__").to_uppercase();
+                vars.insert(envy_key, value);
             }
         }
 
@@ -75,7 +78,7 @@ mod tests {
     #[test]
     fn test_bind_addr_env() {
         let env = TestEnv::with_vars([(
-            "VAULTON_SERVER_BIND_ADDR".to_string(),
+            "VAULTON__SERVER__BIND_ADDR".to_string(),
             "0.0.0.0".to_string(),
         )]);
 
