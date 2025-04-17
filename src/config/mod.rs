@@ -1,4 +1,5 @@
 mod yaml_config_source;
+mod env_config_source;
 
 use crate::utils::merge::Merge;
 use serde::Deserialize;
