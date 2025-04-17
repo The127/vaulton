@@ -3,6 +3,7 @@ use std::error::Error;
 
 use crate::config::Config;
 use crate::fs::FileSystem;
+use crate::utils::merge::Merge;
 
 /// Configuration source that loads settings from a YAML file
 pub struct YamlConfigSource<FS: FileSystem> {
@@ -38,17 +39,10 @@ impl<FS: FileSystem> super::ConfigSource for YamlConfigSource<FS> {
     fn apply(&self, config: &mut Config) -> Result<(), Box<dyn Error>> {
         let contents = self.fs.read_to_string(&self.path)?;
         let yaml_config: Config = serde_yaml::from_str(&contents)?;
-
-        // Update only if Some value is present
-        if let Some(addr) = yaml_config.server.bind_addr {
-            config.server.bind_addr = Some(addr);
-        }
-        if let Some(port) = yaml_config.server.port {
-            config.server.port = Some(port);
-        }
-
+        config.merge(yaml_config);
         Ok(())
     }
+
 }
 
 
