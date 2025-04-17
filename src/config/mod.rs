@@ -34,3 +34,15 @@ impl Default for ServerConfig {
     }
 }
 
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn test_server_config_default() {
+        let config = ServerConfig::default();
+        assert_eq!(config.bind_addr, "127.0.0.1");
+        assert_eq!(config.port, 3000);
+    }
+}
+
