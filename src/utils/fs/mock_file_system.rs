@@ -1,7 +1,7 @@
 use std::collections::HashMap;
 use std::path::{Path, PathBuf};
 
-use crate::fs::FileSystem;
+use crate::utils::fs::FileSystem;
 
 /// A mock filesystem implementation for testing purposes.
 /// Stores files and their contents in memory using a HashMap.

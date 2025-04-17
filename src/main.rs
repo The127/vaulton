@@ -1,6 +1,5 @@
 mod libr;
 mod config;
-mod fs;
 mod utils;
 
 use tokio;
