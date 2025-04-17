@@ -1,32 +1,11 @@
-//! Environment variable parser module that converts flat environment variables into
-//! nested configuration structures using double underscore as a delimiter.
-//!
-//! Example:
-//! ```
-//! DATABASE__HOST=localhost
-//! DATABASE__PORT=5432
-//! ```
-//! Will be parsed into:
-//! ```json
-//! {
-//!   "database": {
-//!     "host": "localhost",
-//!     "port": "5432"
-//!   }
-//! }
-//! ```
-
 use std::error::Error;
 use std::fmt;
 use serde::de::DeserializeOwned;
-use serde_json::{Map, Value};
+use serde_json::{Map, Value, Number};
 
-/// Errors that can occur during environment variable parsing
 #[derive(Debug)]
 pub enum ParserError {
-    /// Occurs when attempting to create nested structures with invalid values
     InvalidValue(String),
-    /// Occurs when the parsed structure cannot be deserialized into the target type
     DeserializeError(String),
 }
 
@@ -40,6 +19,31 @@ impl fmt::Display for ParserError {
 }
 
 impl Error for ParserError {}
+
+fn try_convert_value(value: &str) -> Value {
+    // Try to convert to number first
+    if let Ok(num) = value.parse::<i64>() {
+        return Value::Number(Number::from(num));
+    }
+    if let Ok(num) = value.parse::<u64>() {
+        return Value::Number(Number::from(num));
+    }
+    if let Ok(num) = value.parse::<f64>() {
+        if let Some(num) = Number::from_f64(num) {
+            return Value::Number(num);
+        }
+    }
+    
+    // Try boolean
+    match value.to_lowercase().as_str() {
+        "true" => return Value::Bool(true),
+        "false" => return Value::Bool(false),
+        _ => {}
+    }
+    
+    // Default to string if no other type matches
+    Value::String(value.to_string())
+}
 
 /// Converts an iterator of key-value pairs into a nested structure.
 ///
@@ -94,7 +98,6 @@ where
         for part in parts.iter().take(parts.len() - 1) {
             let lower_part = part.to_ascii_lowercase();
             
-            // Check if the current value is not an object when it should be
             if let Some(existing) = current.get(&lower_part) {
                 if !existing.is_object() {
                     return Err(ParserError::InvalidValue(
@@ -115,7 +118,6 @@ where
         if let Some(last_part) = parts.last() {
             let lower_last = last_part.to_ascii_lowercase();
             
-            // Check if we're trying to nest under a non-object value
             if let Some(existing) = current.get(&lower_last) {
                 if existing.is_object() {
                     return Err(ParserError::InvalidValue(
@@ -124,7 +126,7 @@ where
                 }
             }
             
-            current.insert(lower_last, Value::String(value));
+            current.insert(lower_last, try_convert_value(&value));
         }
     }
 
