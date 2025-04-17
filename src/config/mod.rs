@@ -4,6 +4,7 @@ use serde::Deserialize;
 #[derive(Debug, Deserialize)]
 pub struct Config {
     /// Server-specific configuration settings
+    #[serde(default)]
     pub server: ServerConfig,
 }
 
@@ -22,5 +23,14 @@ pub struct ServerConfig {
     /// Valid values are from 1 to 65535, though ports below 1024
     /// typically require root/administrator privileges
     pub port: u16,
+}
+
+impl Default for ServerConfig {
+    fn default() -> Self {
+        Self {
+            bind_addr: "127.0.0.1".to_string(),
+            port: 3000,
+        }
+    }
 }
 
