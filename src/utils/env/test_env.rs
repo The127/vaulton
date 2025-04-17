@@ -32,7 +32,7 @@ impl Env for TestEnv {
         Ok(())
     }
 
-    fn get_var(&mut self, key: &str) -> Result<String, EnvError> {
+    fn get_var(&self, key: &str) -> Result<String, EnvError> {
         self.vars
             .get(key)
             .cloned()

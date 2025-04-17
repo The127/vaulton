@@ -30,7 +30,7 @@ pub trait Env: Send + Sync {
     fn set_var(&mut self, key: &str, value: &str) -> Result<(), EnvError>;
 
     /// Get an environment variable
-    fn get_var(&mut self, key: &str) -> Result<String, EnvError>;
+    fn get_var(&self, key: &str) -> Result<String, EnvError>;
 
     /// Remove an environment variable
     fn remove_var(&mut self, key: &str) -> Result<(), EnvError>;
@@ -46,7 +46,7 @@ impl Env for SystemEnv {
         Ok(())
     }
 
-    fn get_var(&mut self, key: &str) -> Result<String, EnvError> {
+    fn get_var(&self, key: &str) -> Result<String, EnvError> {
         env::var(key).map_err(|e| EnvError::GetError(e.to_string()))
     }
 
@@ -77,7 +77,7 @@ mod tests {
 
     #[test]
     fn test_get_nonexistent_var() {
-        let mut env = SystemEnv::default();
+        let env = SystemEnv::default();
         assert!(env.get_var("NONEXISTENT_KEY").is_err());
     }
 }
