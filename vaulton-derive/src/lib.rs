@@ -14,38 +14,65 @@ pub fn derive_config_metadata(input: TokenStream) -> TokenStream {
                     let field_paths = fields.named.iter().map(|field| {
                         let field_name = field.ident.as_ref().unwrap();
                         let field_name_str = field_name.to_string();
-                        
-                        // Check if the type is Option<T>
-                        let (type_id, is_optional) = match &field.ty {
+
+                        match &field.ty {
                             Type::Path(type_path) => {
                                 let segments = &type_path.path.segments;
-                                if segments.last().unwrap().ident == "Option" {
-                                    // Extract inner type from Option<T>
+                                let last_segment = segments.last().unwrap();
+                                
+                                if last_segment.ident == "Option" {
+                                    // Handle Option<T> - wrap in vec![]
                                     if let Type::Path(inner_type) = extract_option_inner_type(&field.ty) {
-                                        (quote! { TypeId::of::<#inner_type>() }, true)
+                                        quote! {
+                                            vec![ConfigPath::new(
+                                                #field_name_str.to_string(),
+                                                TypeId::of::<#inner_type>(),
+                                                true,
+                                            )]
+                                        }
                                     } else {
-                                        (quote! { TypeId::of::<#type_path>() }, true)
+                                        quote! {
+                                            vec![ConfigPath::new(
+                                                #field_name_str.to_string(),
+                                                TypeId::of::<#type_path>(),
+                                                true,
+                                            )]
+                                        }
                                     }
                                 } else {
-                                    (quote! { TypeId::of::<#type_path>() }, false)
+                                    // Handle nested structs that implement ConfigMetadata
+                                    let type_name = &last_segment.ident;
+                                    quote! {
+                                        {
+                                            let mut paths = Vec::new();
+                                            // Add direct field path
+                                            paths.push(ConfigPath::new(
+                                                #field_name_str.to_string(),
+                                                TypeId::of::<#type_path>(),
+                                                false,
+                                            ));
+                                            // Add nested paths with prefix
+                                            for mut path in #type_name::get_paths() {
+                                                path.path = format!("{}.{}", #field_name_str, path.path);
+                                                paths.push(path);
+                                            }
+                                            paths
+                                        }
+                                    }
                                 }
                             },
                             _ => panic!("Unsupported field type"),
-                        };
-
-                        quote! {
-                            ConfigPath::new(
-                                #field_name_str.to_string(),
-                                #type_id,
-                                #is_optional,
-                            )
                         }
                     });
 
                     quote! {
-                        vec![
-                            #(#field_paths),*
-                        ]
+                        {
+                            let mut all_paths = Vec::new();
+                            #(
+                                all_paths.extend(#field_paths);
+                            )*
+                            all_paths
+                        }
                     }
                 },
                 _ => panic!("Only named fields are supported"),
