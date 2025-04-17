@@ -1,12 +1,42 @@
 mod yaml_config_source;
 mod env_config_source;
 
+use std::any::TypeId;
 use crate::utils::merge::Merge;
 use serde::Deserialize;
 use std::error::Error;
 
+use vaulton_derive::ConfigMetadata;
+
+pub trait ConfigMetadata {
+    /// Returns a list of all possible config paths and their types
+    fn get_paths() -> Vec<ConfigPath<'static>>;
+}
+
+pub struct ConfigPath<'a> {
+    /// Full path in dot notation (e.g. "server.bind_addr")
+    path: String,
+    /// Type information for proper parsing
+    type_id: TypeId,
+    /// Whether the field is optional
+    is_optional: bool,
+    /// Lifetime of the config path
+    _lifetime: std::marker::PhantomData<&'a ()>,
+}
+
+impl<'a> ConfigPath<'a> {
+    pub fn new(path: String, type_id: TypeId, is_optional: bool) -> Self {
+        Self {
+            path,
+            type_id,
+            is_optional,
+            _lifetime: std::marker::PhantomData,
+        }
+    }
+}
+
 /// Main configuration structure for the Vaulton server
-#[derive(Debug, Deserialize)]
+#[derive(Debug, Deserialize, ConfigMetadata)]
 pub struct Config {
     /// Server-specific configuration settings
     #[serde(default)]
@@ -28,9 +58,8 @@ impl Merge for Config {
     }
 }
 
-
 /// Configuration for the server's network settings
-#[derive(Debug, Deserialize)]
+#[derive(Debug, Deserialize, ConfigMetadata)]
 pub struct ServerConfig {
     /// The IP address the server will bind to
     ///
