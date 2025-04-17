@@ -148,7 +148,7 @@ mod tests {
     #[derive(Debug, Deserialize, PartialEq)]
     struct DatabaseConfig {
         host: String,
-        port: String,
+        port: u16,
     }
 
     #[derive(Debug, Deserialize, PartialEq)]
@@ -166,7 +166,7 @@ mod tests {
 
         let config: TestConfig = from_iter(env_vars).unwrap();
         assert_eq!(config.database.host, "localhost");
-        assert_eq!(config.database.port, "5432");
+        assert_eq!(config.database.port, 5432);
         assert_eq!(config.server.host, "127.0.0.1");
     }
 
@@ -180,7 +180,7 @@ mod tests {
 
         let config: TestConfig = from_iter(env_vars).unwrap();
         assert_eq!(config.database.host, "localhost");
-        assert_eq!(config.database.port, "5432");
+        assert_eq!(config.database.port, 5432);
     }
 
     #[test]
@@ -195,4 +195,43 @@ mod tests {
         let result: Result<StrictConfig, _> = from_iter(env_vars);
         assert!(matches!(result, Err(ParserError::DeserializeError(_))));
     }
+
+
+
+    #[test]
+    fn test_boolean_conversion() {
+        #[derive(Debug, Deserialize, PartialEq)]
+        struct BoolConfig {
+            enabled: bool,
+        }
+
+        let vars = vec![
+            ("ENABLED".to_string(), "true".to_string()),
+        ];
+
+        let config: BoolConfig = from_iter(vars).unwrap();
+        assert!(config.enabled);
+    }
+
+    #[test]
+    fn test_number_conversion() {
+        #[derive(Debug, Deserialize, PartialEq)]
+        struct NumConfig {
+            integer: i32,
+            unsigned: u32,
+            float: f64,
+        }
+
+        let vars = vec![
+            ("INTEGER".to_string(), "-42".to_string()),
+            ("UNSIGNED".to_string(), "42".to_string()),
+            ("FLOAT".to_string(), "42.5".to_string()),
+        ];
+
+        let config: NumConfig = from_iter(vars).unwrap();
+        assert_eq!(config.integer, -42);
+        assert_eq!(config.unsigned, 42);
+        assert_eq!(config.float, 42.5);
+    }
+
 }
