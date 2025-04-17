@@ -1,0 +1,196 @@
+//! Environment variable parser module that converts flat environment variables into
+//! nested configuration structures using double underscore as a delimiter.
+//!
+//! Example:
+//! ```
+//! DATABASE__HOST=localhost
+//! DATABASE__PORT=5432
+//! ```
+//! Will be parsed into:
+//! ```json
+//! {
+//!   "database": {
+//!     "host": "localhost",
+//!     "port": "5432"
+//!   }
+//! }
+//! ```
+
+use std::error::Error;
+use std::fmt;
+use serde::de::DeserializeOwned;
+use serde_json::{Map, Value};
+
+/// Errors that can occur during environment variable parsing
+#[derive(Debug)]
+pub enum ParserError {
+    /// Occurs when attempting to create nested structures with invalid values
+    InvalidValue(String),
+    /// Occurs when the parsed structure cannot be deserialized into the target type
+    DeserializeError(String),
+}
+
+impl fmt::Display for ParserError {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        match self {
+            ParserError::InvalidValue(msg) => write!(f, "Invalid value: {}", msg),
+            ParserError::DeserializeError(msg) => write!(f, "Deserialization error: {}", msg),
+        }
+    }
+}
+
+impl Error for ParserError {}
+
+/// Converts an iterator of key-value pairs into a nested structure.
+///
+/// # Arguments
+///
+/// * `iter` - An iterator yielding (String, String) pairs representing environment variables
+///
+/// # Type Parameters
+///
+/// * `T` - The target type to deserialize into
+/// * `I` - The iterator type
+///
+/// # Returns
+///
+/// Returns `Result<T, ParserError>` where T is the deserialized structure
+///
+/// # Example
+///
+/// ```
+/// use serde::Deserialize;
+///
+/// #[derive(Deserialize)]
+/// struct Config {
+///     database: DatabaseConfig,
+/// }
+///
+/// #[derive(Deserialize)]
+/// struct DatabaseConfig {
+///     host: String,
+///     port: String,
+/// }
+///
+/// let env_vars = vec![
+///     ("DATABASE__HOST".to_string(), "localhost".to_string()),
+///     ("DATABASE__PORT".to_string(), "5432".to_string()),
+/// ];
+///
+/// let config: Config = from_iter(env_vars).unwrap();
+/// ```
+pub fn from_iter<T, I>(iter: I) -> Result<T, ParserError>
+where
+    T: DeserializeOwned,
+    I: IntoIterator<Item = (String, String)>
+{
+    let mut json_map = Map::new();
+
+    for (key, value) in iter {
+        let parts: Vec<&str> = key.split("__").collect();
+        
+        let mut current = &mut json_map;
+        
+        for part in parts.iter().take(parts.len() - 1) {
+            let lower_part = part.to_ascii_lowercase();
+            
+            // Check if the current value is not an object when it should be
+            if let Some(existing) = current.get(&lower_part) {
+                if !existing.is_object() {
+                    return Err(ParserError::InvalidValue(
+                        format!("Invalid nesting: {} is not an object", part)
+                    ));
+                }
+            }
+            
+            current = current
+                .entry(&lower_part)
+                .or_insert(Value::Object(Map::new()))
+                .as_object_mut()
+                .ok_or_else(|| ParserError::InvalidValue(
+                    format!("Failed to create nested structure at {}", part)
+                ))?;
+        }
+        
+        if let Some(last_part) = parts.last() {
+            let lower_last = last_part.to_ascii_lowercase();
+            
+            // Check if we're trying to nest under a non-object value
+            if let Some(existing) = current.get(&lower_last) {
+                if existing.is_object() {
+                    return Err(ParserError::InvalidValue(
+                        format!("Attempted to set value on object at {}", last_part)
+                    ));
+                }
+            }
+            
+            current.insert(lower_last, Value::String(value));
+        }
+    }
+
+    serde_json::from_value(Value::Object(json_map))
+        .map_err(|e| ParserError::DeserializeError(e.to_string()))
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use serde::Deserialize;
+
+    #[derive(Debug, Deserialize, PartialEq)]
+    struct TestConfig {
+        database: DatabaseConfig,
+        server: ServerConfig,
+    }
+
+    #[derive(Debug, Deserialize, PartialEq)]
+    struct DatabaseConfig {
+        host: String,
+        port: String,
+    }
+
+    #[derive(Debug, Deserialize, PartialEq)]
+    struct ServerConfig {
+        host: String,
+    }
+
+    #[test]
+    fn test_basic_parsing() {
+        let env_vars = vec![
+            ("DATABASE__HOST".to_string(), "localhost".to_string()),
+            ("DATABASE__PORT".to_string(), "5432".to_string()),
+            ("SERVER__HOST".to_string(), "127.0.0.1".to_string()),
+        ];
+
+        let config: TestConfig = from_iter(env_vars).unwrap();
+        assert_eq!(config.database.host, "localhost");
+        assert_eq!(config.database.port, "5432");
+        assert_eq!(config.server.host, "127.0.0.1");
+    }
+
+    #[test]
+    fn test_case_insensitive_keys() {
+        let env_vars = vec![
+            ("DATABASE__HOST".to_string(), "localhost".to_string()),
+            ("database__PORT".to_string(), "5432".to_string()),
+            ("SERVER__HOST".to_string(), "127.0.0.1".to_string()),
+        ];
+
+        let config: TestConfig = from_iter(env_vars).unwrap();
+        assert_eq!(config.database.host, "localhost");
+        assert_eq!(config.database.port, "5432");
+    }
+
+    #[test]
+    fn test_deserialize_error() {
+        #[derive(Debug, Deserialize)]
+        struct StrictConfig {
+            port: u16,
+        }
+
+        let env_vars = vec![("PORT".to_string(), "invalid".to_string())];
+
+        let result: Result<StrictConfig, _> = from_iter(env_vars);
+        assert!(matches!(result, Err(ParserError::DeserializeError(_))));
+    }
+}
