@@ -3,6 +3,7 @@ use crate::utils::env::Env;
 use crate::utils::merge::Merge;
 use std::collections::HashMap;
 use std::error::Error;
+use crate::utils;
 
 pub struct EnvConfigSource<E: Env> {
     env: E,
@@ -50,7 +51,7 @@ impl<E: Env> ConfigSource for EnvConfigSource<E> {
             return Ok(());
         }
 
-        let env_config: Config = envy::from_iter(vars.into_iter())?;
+        let env_config: Config = utils::env_parser::from_iter(vars.into_iter())?;
         config.merge(env_config);
         Ok(())
     }
@@ -92,7 +93,10 @@ mod tests {
 
     #[test]
     fn test_port_env() {
-        let env = TestEnv::with_vars([("VAULTON_SERVER_PORT".to_string(), "9000".to_string())]);
+        let env = TestEnv::with_vars([(
+            "VAULTON__SERVER__PORT".to_string(),
+            "9000".to_string()
+        )]);
 
         let source = EnvConfigSource::new(env);
         let mut config = Config::default();
@@ -106,10 +110,13 @@ mod tests {
     fn test_multiple_env_vars() {
         let env = TestEnv::with_vars([
             (
-                "VAULTON_SERVER_BIND_ADDR".to_string(),
+                "VAULTON__SERVER__BIND_ADDR".to_string(),
                 "0.0.0.0".to_string(),
             ),
-            ("VAULTON_SERVER_PORT".to_string(), "9000".to_string()),
+            (
+                "VAULTON__SERVER__PORT".to_string(),
+                "9000".to_string()
+            ),
         ]);
 
         let source = EnvConfigSource::new(env);
