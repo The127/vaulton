@@ -9,6 +9,14 @@ pub struct Config {
     pub server: ServerConfig,
 }
 
+impl Default for Config {
+    fn default() -> Self {
+        Self {
+            server: ServerConfig::default(),
+        }
+    }
+}
+
 /// Configuration for the server's network settings
 #[derive(Debug, Deserialize)]
 pub struct ServerConfig {
@@ -51,5 +59,12 @@ mod tests {
         assert_eq!(config.bind_addr, "127.0.0.1");
         assert_eq!(config.port, 3000);
     }
-}
 
+
+    #[test]
+    fn test_config_default() {
+        let config = Config::default();
+        assert_eq!(config.server.bind_addr, "127.0.0.1");
+        assert_eq!(config.server.port, 3000);
+    }
+}
