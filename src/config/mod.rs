@@ -1,3 +1,5 @@
+mod yaml_config_source;
+
 use serde::Deserialize;
 use std::error::Error;
 

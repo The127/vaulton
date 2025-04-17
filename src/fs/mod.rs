@@ -1,4 +1,4 @@
-mod mock_file_system;
+pub mod mock_file_system;
 
 use std::path::Path;
 use std::io;
