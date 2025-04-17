@@ -38,12 +38,19 @@ impl<FS: FileSystem> super::ConfigSource for YamlConfigSource<FS> {
     fn apply(&self, config: &mut Config) -> Result<(), Box<dyn Error>> {
         let contents = self.fs.read_to_string(&self.path)?;
         let yaml_config: Config = serde_yaml::from_str(&contents)?;
-        // Update the provided config with values from YAML
-        *config = yaml_config;
-        
+
+        // Update only if Some value is present
+        if let Some(addr) = yaml_config.server.bind_addr {
+            config.server.bind_addr = Some(addr);
+        }
+        if let Some(port) = yaml_config.server.port {
+            config.server.port = Some(port);
+        }
+
         Ok(())
     }
 }
+
 
 #[cfg(test)]
 mod tests {
@@ -61,16 +68,34 @@ server:
   port: 8080
 "#);
 
+        let source = YamlConfigSource::new("config.yml", fs);
+        let mut config = Config::default();
+
+        // Apply the configuration
+        source.apply(&mut config).unwrap();
+
+        // Verify the config was updated
+        assert_eq!(config.server.bind_addr, Some("0.0.0.0".to_string()));
+        assert_eq!(config.server.port, Some(8080));
+    }
+
+    #[test]
+    fn test_partial_yaml_config() {
+        // Create config with only bind_addr
+        let fs = MockFileSystem::new()
+            .with_file("config.yml", r#"
+    server:
+      bind_addr: '0.0.0.0'
+    "#);
 
         let source = YamlConfigSource::new("config.yml", fs);
         let mut config = Config::default();
-        
-        // Apply the configuration
+        let default_port = config.server.port;
+
         source.apply(&mut config).unwrap();
-        
-        // Verify the config was updated
-        assert_eq!(config.server.bind_addr, "0.0.0.0");
-        assert_eq!(config.server.port, 8080);
+
+        assert_eq!(config.server.bind_addr, Some("0.0.0.0".to_string()));
+        assert_eq!(config.server.port, default_port);
     }
 
     #[test]
