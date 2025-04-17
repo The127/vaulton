@@ -1,2 +1,2 @@
 pub mod merge;
-mod env;
+pub mod env;
