@@ -1,46 +1,53 @@
-use std::error::Error;
-use crate::config::{Config, ConfigSource, ServerConfig};
+use crate::config::{Config, ConfigMetadata, ConfigSource};
 use crate::utils::env::Env;
 use crate::utils::merge::Merge;
+use std::collections::HashMap;
+use std::error::Error;
 
-/// Configuration source that loads settings from environment variables
-/// Environment variables are expected to be in the format:
-/// - VAULTON_SERVER_BIND_ADDR
-/// - VAULTON_SERVER_PORT
 pub struct EnvConfigSource<E: Env> {
-    /// Environment implementation to use
     env: E,
+    prefix: String,
 }
 
 impl<E: Env> EnvConfigSource<E> {
-    /// Creates a new environment configuration source with the provided environment implementation
     pub fn new(env: E) -> Self {
-        Self { env }
-    }
-}
-
-impl<E: Env> ConfigSource for EnvConfigSource<E> {
-    /// Apply environment configuration to the given config instance
-    ///
-    /// # Arguments
-    /// * `config` - Configuration instance to update
-    ///
-    /// # Returns
-    /// * `Ok(())` if configuration was successfully loaded and applied
-    /// * `Err` if environment variables couldn't be read
-    fn apply(&self, config: &mut Config) -> Result<(), Box<dyn Error>> {
-        let mut env_config = Config::default();
-
-        if let Ok(addr) = self.env.get_var("VAULTON_SERVER_BIND_ADDR") {
-            env_config.server.bind_addr = Some(addr);
+        Self {
+            env,
+            prefix: "VAULTON_".to_string(),
         }
+    }
 
-        if let Ok(port_str) = self.env.get_var("VAULTON_SERVER_PORT") {
-            if let Ok(port) = port_str.parse::<u16>() {
-                env_config.server.port = Some(port);
+    fn collect_env_vars(&self) -> Result<HashMap<String, String>, Box<dyn Error>> {
+        let mut vars = HashMap::new();
+
+        // Get all possible config paths
+        for path in Config::get_paths() {
+            // Convert dot notation to env var format
+            let env_key = format!(
+                "{}{}",
+                self.prefix,
+                path.path.replace('.', "_").to_uppercase()
+            );
+
+            if let Ok(value) = self.env.get_var(&env_key) {
+                vars.insert(path.path, value);
             }
         }
 
+        Ok(vars)
+    }
+}
+
+
+
+impl<E: Env> ConfigSource for EnvConfigSource<E> {
+    fn apply(&self, config: &mut Config) -> Result<(), Box<dyn Error>> {
+        let vars = self.collect_env_vars()?;
+        if vars.is_empty() {
+            return Ok(());
+        }
+
+        let env_config: Config = envy::from_iter(vars.into_iter())?;
         config.merge(env_config);
         Ok(())
     }
@@ -67,9 +74,10 @@ mod tests {
 
     #[test]
     fn test_bind_addr_env() {
-        let env = TestEnv::with_vars([
-            ("VAULTON_SERVER_BIND_ADDR".to_string(), "0.0.0.0".to_string()),
-        ]);
+        let env = TestEnv::with_vars([(
+            "VAULTON_SERVER_BIND_ADDR".to_string(),
+            "0.0.0.0".to_string(),
+        )]);
 
         let source = EnvConfigSource::new(env);
         let mut config = Config::default();
@@ -81,9 +89,7 @@ mod tests {
 
     #[test]
     fn test_port_env() {
-        let env = TestEnv::with_vars([
-            ("VAULTON_SERVER_PORT".to_string(), "9000".to_string()),
-        ]);
+        let env = TestEnv::with_vars([("VAULTON_SERVER_PORT".to_string(), "9000".to_string())]);
 
         let source = EnvConfigSource::new(env);
         let mut config = Config::default();
@@ -96,7 +102,10 @@ mod tests {
     #[test]
     fn test_multiple_env_vars() {
         let env = TestEnv::with_vars([
-            ("VAULTON_SERVER_BIND_ADDR".to_string(), "0.0.0.0".to_string()),
+            (
+                "VAULTON_SERVER_BIND_ADDR".to_string(),
+                "0.0.0.0".to_string(),
+            ),
             ("VAULTON_SERVER_PORT".to_string(), "9000".to_string()),
         ]);
 
@@ -111,9 +120,10 @@ mod tests {
 
     #[test]
     fn test_invalid_port() {
-        let env = TestEnv::with_vars([
-            ("VAULTON_SERVER_PORT".to_string(), "not_a_number".to_string()),
-        ]);
+        let env = TestEnv::with_vars([(
+            "VAULTON_SERVER_PORT".to_string(),
+            "not_a_number".to_string(),
+        )]);
 
         let source = EnvConfigSource::new(env);
         let mut config = Config::default();
