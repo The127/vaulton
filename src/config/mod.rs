@@ -60,7 +60,6 @@ mod tests {
         assert_eq!(config.port, 3000);
     }
 
-
     #[test]
     fn test_config_default() {
         let config = Config::default();
