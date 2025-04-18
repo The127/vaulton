@@ -1,5 +1,6 @@
 pub mod yaml_config_source;
 pub mod env_config_source;
+pub mod builder;
 
 use std::any::TypeId;
 use crate::utils::merge::Merge;
