@@ -7,7 +7,10 @@ use shaku::module;
 
 module! {
     pub MyModule {
-        components = [crate::repository::client_repository::InMemoryClientRepository],
+        components = [
+            crate::db::DatabaseImpl,
+            crate::repository::client_repository::InMemoryClientRepository
+        ],
         providers = []
     }
 }

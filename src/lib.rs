@@ -5,6 +5,7 @@ pub mod oidc;
 mod repository;
 mod domain;
 mod di;
+pub mod db;
 
 // Re-export main types for easier access
 pub use config::{Config, ConfigSource};
