@@ -141,7 +141,7 @@ mod tests {
     #[test]
     fn test_oidc_config_default() {
         let config = OIDCConfig::default();
-        assert_eq!(config.external_url, None);
+        assert_eq!(config.external_url, Some("http://localhost:3000".to_string()));
     }
 
     #[test]
@@ -149,7 +149,7 @@ mod tests {
         let config = Config::default();
         assert_eq!(config.server.bind_addr, Some("127.0.0.1".to_string()));
         assert_eq!(config.server.port, Some(3000));
-        assert_eq!(config.oidc.external_url, None);
+        assert_eq!(config.oidc.external_url, Some("http://localhost:3000".to_string()));
     }
 
     #[test]
