@@ -1,0 +1,11 @@
+### Test OpenID Connect Discovery Endpoint
+GET http://localhost:3000/.well-known/openid-configuration
+Accept: application/json
+
+### Test Health Check (if available)
+GET http://localhost:3000/health
+Accept: application/json
+
+### Test Non-Existent Endpoint (should return 404)
+GET http://localhost:3000/not-found
+Accept: application/json
