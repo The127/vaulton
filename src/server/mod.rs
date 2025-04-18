@@ -8,7 +8,8 @@ use crate::repository::client_repository::OAuthModule;
 
 #[derive(Clone)]
 pub struct AppState {
-    module: Arc<OAuthModule>,
+    pub module: Arc<OAuthModule>,
+    pub config: Config,
 }
 
 pub async fn create_server(config: Config) -> Router {
@@ -21,11 +22,11 @@ pub async fn create_server(config: Config) -> Router {
     // Create the app state
     let state = AppState {
         module,
+        config,
     };
 
     // Create a new router with a single route
     Router::new()
-        .with_state(state)
         .route("/health", get(health::health_check))
-        .merge(oidc::oidc_routes(config))
+        .merge(oidc::oidc_routes(state))
 }

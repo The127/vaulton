@@ -37,7 +37,7 @@ impl<'a> ConfigPath<'a> {
 }
 
 /// Main configuration structure for the Vaulton server
-#[derive(Debug, Deserialize, ConfigMetadata)]
+#[derive(Clone, Debug, Deserialize, ConfigMetadata)]
 pub struct Config {
     /// Server-specific configuration settings
     #[serde(default)]
@@ -64,7 +64,7 @@ impl Merge for Config {
 }
 
 /// Configuration for the server's network settings
-#[derive(Debug, Deserialize, ConfigMetadata)]
+#[derive(Clone, Debug, Deserialize, ConfigMetadata)]
 pub struct ServerConfig {
     /// The IP address the server will bind to
     ///

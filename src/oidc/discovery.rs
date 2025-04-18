@@ -6,11 +6,12 @@ use crate::Config;
 use crate::config::OIDCConfig;
 use axum::extract::State;
 use axum::{response::Json, routing::get, Router};
+use crate::server::AppState;
 
 /// Handles the OpenID Configuration endpoint request.
 /// Returns a JSON response containing the OpenID Provider configuration information.
-pub async fn openid_configuration(State(config): State<OIDCConfig>) -> Json<OpenIDConfiguration> {
-    let base_url = config.external_url.unwrap();
+pub async fn openid_configuration(State(app_state): State<AppState>) -> Json<OpenIDConfiguration> {
+    let base_url = app_state.config.oidc.external_url.unwrap();
 
     Json(OpenIDConfiguration {
         // The Issuer Identifier for the OpenID Provider
