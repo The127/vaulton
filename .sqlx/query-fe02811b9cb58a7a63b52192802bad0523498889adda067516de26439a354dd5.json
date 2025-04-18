@@ -1,0 +1,61 @@
+{
+  "db_name": "PostgreSQL",
+  "query": "\n            insert into clients(client_id, client_secret_hash, redirect_uris, scopes)\n            values ($1, $2, $3, $4)\n            returning *;\n            ",
+  "describe": {
+    "columns": [
+      {
+        "ordinal": 0,
+        "name": "id",
+        "type_info": "Uuid"
+      },
+      {
+        "ordinal": 1,
+        "name": "client_id",
+        "type_info": "Varchar"
+      },
+      {
+        "ordinal": 2,
+        "name": "client_secret_hash",
+        "type_info": "Bytea"
+      },
+      {
+        "ordinal": 3,
+        "name": "redirect_uris",
+        "type_info": "TextArray"
+      },
+      {
+        "ordinal": 4,
+        "name": "scopes",
+        "type_info": "TextArray"
+      },
+      {
+        "ordinal": 5,
+        "name": "created_at",
+        "type_info": "Timestamptz"
+      },
+      {
+        "ordinal": 6,
+        "name": "updated_at",
+        "type_info": "Timestamptz"
+      }
+    ],
+    "parameters": {
+      "Left": [
+        "Varchar",
+        "Bytea",
+        "TextArray",
+        "TextArray"
+      ]
+    },
+    "nullable": [
+      false,
+      false,
+      true,
+      true,
+      true,
+      false,
+      false
+    ]
+  },
+  "hash": "fe02811b9cb58a7a63b52192802bad0523498889adda067516de26439a354dd5"
+}
