@@ -8,6 +8,6 @@ pub async fn create_server(config: Config) -> Router {
     // Create a new router with a single route
     Router::new()
         .route("/health", get(health::health_check))
-        .merge(oidc::discovery::discovery_routes(config))
+        .merge(oidc::oidc_routes(config))
 
 }

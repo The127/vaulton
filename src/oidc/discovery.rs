@@ -7,20 +7,9 @@ use crate::config::OIDCConfig;
 use axum::extract::State;
 use axum::{response::Json, routing::get, Router};
 
-/// Creates a router with OpenID Connect Discovery endpoint.
-/// Exposes the well-known OpenID configuration at /.well-known/openid-configuration
-pub fn discovery_routes(config: Config) -> Router {
-    Router::new()
-        .route(
-            "/.well-known/openid-configuration",
-            get(openid_configuration),
-        )
-        .with_state(config.oidc)
-}
-
 /// Handles the OpenID Configuration endpoint request.
 /// Returns a JSON response containing the OpenID Provider configuration information.
-async fn openid_configuration(State(config): State<OIDCConfig>) -> Json<OpenIDConfiguration> {
+pub async fn openid_configuration(State(config): State<OIDCConfig>) -> Json<OpenIDConfiguration> {
     let base_url = config.external_url.unwrap();
 
     Json(OpenIDConfiguration {
