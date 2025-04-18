@@ -42,12 +42,15 @@ pub struct Config {
     /// Server-specific configuration settings
     #[serde(default)]
     pub server: ServerConfig,
+    #[serde(default)]
+    pub oidc: OIDCConfig,
 }
 
 impl Default for Config {
     fn default() -> Self {
         Self {
             server: ServerConfig::default(),
+            oidc: OIDCConfig::default(),
         }
     }
 }
@@ -56,6 +59,7 @@ impl Default for Config {
 impl Merge for Config {
     fn merge(&mut self, other: Self) {
         self.server.merge(other.server);
+        self.oidc.merge(other.oidc);
     }
 }
 
@@ -93,6 +97,30 @@ impl Merge for ServerConfig {
     }
 }
 
+/// Configuration for OpenID Connect settings
+#[derive(Debug, Deserialize, ConfigMetadata)]
+pub struct OIDCConfig {
+    /// The external URL where this server is accessible
+    /// This is used for generating URLs in OIDC discovery document
+    /// Example: "https://auth.example.com"
+    pub external_url: Option<String>,
+}
+
+impl Default for OIDCConfig {
+    fn default() -> Self {
+        Self {
+            external_url: Some("http://localhost:3000".to_string()),
+        }
+    }
+}
+
+impl Merge for OIDCConfig {
+    fn merge(&mut self, other: Self) {
+        self.external_url.merge(other.external_url);
+    }
+}
+
+
 /// Trait for loading static configuration from different sources
 pub trait ConfigSource {
     /// Apply configuration from this source to the given config
@@ -111,10 +139,17 @@ mod tests {
     }
 
     #[test]
+    fn test_oidc_config_default() {
+        let config = OIDCConfig::default();
+        assert_eq!(config.external_url, None);
+    }
+
+    #[test]
     fn test_config_default() {
         let config = Config::default();
         assert_eq!(config.server.bind_addr, Some("127.0.0.1".to_string()));
         assert_eq!(config.server.port, Some(3000));
+        assert_eq!(config.oidc.external_url, None);
     }
 
     #[test]
@@ -125,12 +160,16 @@ mod tests {
                 bind_addr: Some("0.0.0.0".to_string()),
                 port: Some(8080),
             },
+            oidc: OIDCConfig {
+                external_url: Some("https://example.com".to_string()),
+            },
         };
 
         base.merge(other);
 
         assert_eq!(base.server.bind_addr, Some("0.0.0.0".to_string()));
         assert_eq!(base.server.port, Some(8080));
+        assert_eq!(base.oidc.external_url, Some("https://example.com".to_string()));
     }
 
     #[test]
