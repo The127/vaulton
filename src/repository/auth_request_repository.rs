@@ -39,13 +39,3 @@ impl AuthRequestRepository for InMemoryAuthRequestRepository {
         requests.get(request_id).cloned()
     }
 }
-
-// Define the module
-use shaku::module;
-
-module! {
-    pub OAuthModule {
-        components = [InMemoryAuthRequestRepository],
-        providers = []
-    }
-}
