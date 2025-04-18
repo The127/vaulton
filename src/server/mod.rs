@@ -4,7 +4,7 @@ use std::sync::Arc;
 use crate::{oidc, Config};
 
 use axum::{Router, routing::get};
-use crate::repository::client_repository::OAuthModule;
+use crate::repository::OAuthModule;
 
 #[derive(Clone)]
 pub struct AppState {

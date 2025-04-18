@@ -17,7 +17,7 @@ impl Client {
         self.redirect_uris.contains(uri)
     }
     
-    pub fn validate_scopes(&self, scopes: &[String]) -> bool {
-        scopes.iter().all(|s| self.allowed_scopes.contains(s))
+    pub fn validate_scopes(&self, scopes: &Vec<&str>) -> bool {
+        scopes.iter().all(|s| self.allowed_scopes.contains(&s.to_string()))
     }
 }

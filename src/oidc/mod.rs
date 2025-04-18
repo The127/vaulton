@@ -3,7 +3,7 @@ use crate::Config;
 use axum::routing::get;
 use axum::Router;
 
-mod auth;
+pub mod auth;
 pub mod discovery;
 pub mod error;
 pub mod types;

@@ -32,13 +32,3 @@ impl ClientRepository for InMemoryClientRepository {
         clients.get(id).cloned()
     }
 }
-
-// Define the module
-use shaku::module;
-
-module! {
-    pub OAuthModule {
-        components = [InMemoryClientRepository],
-        providers = []
-    }
-}
