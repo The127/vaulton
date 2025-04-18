@@ -29,11 +29,17 @@ async fn main() {
             std::process::exit(1);
         });
     
-    println!("Loaded config: {:?}", config);
-
+    let bind_addr = config.server.bind_addr.as_deref().unwrap();
+    let port = config.server.port.unwrap();
+    let addr = format!("{}:{}", bind_addr, port);
+    
     let app = vaulton::server::create_server().await;
-    let listener = tokio::net::TcpListener::bind("127.0.0.1:3000").await.unwrap();
-    println!("Server running on http://127.0.0.1:3000");
+    let listener = tokio::net::TcpListener::bind(&addr).await.unwrap_or_else(|e| {
+        eprintln!("Failed to bind to {}: {}", addr, e);
+        std::process::exit(1);
+    });
+    
+    println!("Server running on http://{}", addr);
     
     axum::serve(listener, app).await.unwrap();
 }
