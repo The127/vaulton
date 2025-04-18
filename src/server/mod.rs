@@ -4,18 +4,18 @@ use std::sync::Arc;
 use crate::{oidc, Config};
 
 use axum::{Router, routing::get};
-use crate::repository::OAuthModule;
+use crate::di::MyModule;
 
 #[derive(Clone)]
 pub struct AppState {
-    pub module: Arc<OAuthModule>,
+    pub module: Arc<MyModule>,
     pub config: Config,
 }
 
 pub async fn create_server(config: Config) -> Router {
     // Create the DI module
     let module = Arc::new(
-        OAuthModule::builder()
+        MyModule::builder()
             .build()
     );
 

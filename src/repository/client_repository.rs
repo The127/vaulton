@@ -1,10 +1,8 @@
-use std::collections::HashMap;
 use std::sync::Arc;
 use async_trait::async_trait;
 use shaku::{Component, Interface};
-use sqlx::PgPool;
-use tokio::sync::RwLock;
-use crate::domain::client::{Client, ClientId};
+use crate::db::Database;
+use crate::domain::client::{Client};
 
 pub struct CreateClientParams {
     pub redirect_uris: Vec<String>,
@@ -21,11 +19,11 @@ pub trait ClientRepository: Interface {
 #[shaku(interface = ClientRepository)]
 pub struct PostgresClientRepository {
     #[shaku(inject)]
-    pool: Arc<PgPool>,
+    pool: Arc<dyn Database>,
 }
 
 impl PostgresClientRepository {
-    fn new(pool: Arc<PgPool>) -> Self {
+    fn new(pool: Arc<dyn Database>) -> Self {
         Self { pool }
     }
 }
