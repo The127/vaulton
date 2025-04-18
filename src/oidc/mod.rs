@@ -5,6 +5,7 @@ use axum::Router;
 mod auth;
 pub mod discovery;
 pub mod types;
+mod errors;
 
 pub fn oidc_routes(config: Config) -> Router {
     Router::new()
