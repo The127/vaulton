@@ -10,6 +10,7 @@ use shaku::HasComponent;
 use crate::repository::client_repository::ClientRepository;
 use crate::repository::auth_request_repository::AuthRequestRepository;
 use crate::server::AppState;use chrono::{DateTime, Utc};
+use crate::domain::client::ClientId;
 
 /// Represents an OpenID Connect authorization request.
 /// Contains the parameters required for initiating the authentication flow.
@@ -78,7 +79,7 @@ pub async fn authorize(
 
     let client_repository: Arc<dyn ClientRepository> = state.module.as_ref().resolve();
 
-    let client = match client_repository.find_by_id(&params.client_id).await {
+    let client = match client_repository.find_by_id(&ClientId(params.client_id.clone())).await {
         Some(client) => client,
         None => {
             return OAuthError::InvalidClient("Client not found".to_string())

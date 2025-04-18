@@ -1,0 +1,58 @@
+{
+  "db_name": "PostgreSQL",
+  "query": "\n            SELECT id, client_id, client_secret_hash, redirect_uris, scopes, created_at, updated_at \n            FROM clients \n            WHERE client_id = $1;\n            ",
+  "describe": {
+    "columns": [
+      {
+        "ordinal": 0,
+        "name": "id",
+        "type_info": "Uuid"
+      },
+      {
+        "ordinal": 1,
+        "name": "client_id",
+        "type_info": "Varchar"
+      },
+      {
+        "ordinal": 2,
+        "name": "client_secret_hash",
+        "type_info": "Bytea"
+      },
+      {
+        "ordinal": 3,
+        "name": "redirect_uris",
+        "type_info": "TextArray"
+      },
+      {
+        "ordinal": 4,
+        "name": "scopes",
+        "type_info": "TextArray"
+      },
+      {
+        "ordinal": 5,
+        "name": "created_at",
+        "type_info": "Timestamptz"
+      },
+      {
+        "ordinal": 6,
+        "name": "updated_at",
+        "type_info": "Timestamptz"
+      }
+    ],
+    "parameters": {
+      "Left": [
+        "Text"
+      ]
+    },
+    "nullable": [
+      false,
+      false,
+      true,
+      true,
+      true,
+      false,
+      false
+    ]
+  },
+  "hash": "595ff36caedcc8f6fb095b137472acc9d75dfea57a57dbea6aebcc70cb2f27f2"
+}

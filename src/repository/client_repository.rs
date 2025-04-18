@@ -14,7 +14,7 @@ pub struct CreateClientParams {
 #[async_trait]
 pub trait ClientRepository: Interface {
     async fn create(&self, client: CreateClientParams) -> Result<Client, String>;
-    async fn find_by_id(&self, id: &str) -> Option<Client>;
+    async fn find_by_id(&self, id: &ClientId) -> Option<Client>;
 }
 
 #[derive(Component)]
@@ -59,7 +59,27 @@ impl ClientRepository for PostgresClientRepository {
         })
     }
 
-    async fn find_by_id(&self, id: &str) -> Option<Client> {
-        unimplemented!()
+    async fn find_by_id(&self, id: &ClientId) -> Option<Client> {
+        let result = sqlx::query!(
+            r#"
+            SELECT id, client_id, client_secret_hash, redirect_uris, scopes, created_at, updated_at 
+            FROM clients 
+            WHERE client_id = $1;
+            "#,
+            id.0.as_str(),
+        )
+        .fetch_optional(self.pool.get_pool())
+        .await
+        .ok()??;
+
+        Some(Client {
+            uuid: result.id,
+            id: ClientId(result.client_id),
+            secret_hash: result.client_secret_hash,
+            redirect_uris: result.redirect_uris.unwrap_or_default(),
+            allowed_scopes: result.scopes.unwrap_or_default(),
+            created_at: result.created_at,
+            updated_at: result.updated_at,
+        })
     }
 }
