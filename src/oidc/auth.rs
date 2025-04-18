@@ -1,12 +1,13 @@
 //! OpenID Connect Authorization endpoint implementation.
 //! Handles the authentication requests and initiates the authorization flow.
 
-use axum::{
-    extract::Query,
-    response::Redirect,
-};
-use serde::Deserialize;
 use super::error::OAuthError;
+use axum::{extract::Query, response::Redirect};
+use axum::extract::State;
+use serde::Deserialize;
+use shaku::HasComponent;
+use crate::repository::client_repository::ClientRepository;
+use crate::server::AppState;
 
 /// Represents an OpenID Connect authorization request.
 /// Contains the parameters required for initiating the authentication flow.
@@ -30,21 +31,29 @@ pub struct AuthRequest {
 
 /// Handles the authorization request and initiates the authentication flow.
 /// Returns a redirect to either the login page or the error page depending on the validation result.
-pub async fn authorize(Query(params): Query<AuthRequest>) -> Redirect {
+pub async fn authorize(
+    State(state): State<AppState>,
+    Query(params): Query<AuthRequest>,
+) -> Redirect {
     if params.response_type != "code" {
         return OAuthError::UnsupportedResponseType(
-            "Only 'code' response type is supported".to_string()
-        ).to_redirect_response(&params.redirect_uri, params.state.as_deref());
+            "Only 'code' response type is supported".to_string(),
+        )
+        .to_redirect_response(&params.redirect_uri, params.state.as_deref());
     }
 
     if let Some(method) = &params.code_challenge_method {
         if method != "S256" {
             return OAuthError::InvalidRequest(
-                "Only 'S256' code challenge method is supported".to_string()
-            ).to_redirect_response(&params.redirect_uri, params.state.as_deref());
+                "Only 'S256' code challenge method is supported".to_string(),
+            )
+            .to_redirect_response(&params.redirect_uri, params.state.as_deref());
         }
     }
 
-    todo!("Implement authorization flow")
+    let client_repository = state.module.resolve();
 
+    client_repository.find_by_id("test").await;
+
+    Redirect::temporary("/health")
 }
