@@ -13,6 +13,14 @@ path = "src/main.rs"
 
 
 [dependencies]
+sqlx = { version = "0.7", features = [
+    "runtime-tokio-rustls",  # Runtime & TLS support
+    "postgres",              # PostgreSQL
+    "uuid",                  # UUID support
+    "chrono",               # DateTime support
+    "json",                 # JSON support
+    "migrate"               # DB migrations support
+]}
 shaku = "0.6"
 async-trait = "0.1"  # We'll need this for async services
 clap = { version = "4.4", features = ["derive"] }
