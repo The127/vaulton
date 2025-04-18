@@ -16,7 +16,7 @@ pub async fn openid_configuration(State(config): State<OIDCConfig>) -> Json<Open
         // The Issuer Identifier for the OpenID Provider
         issuer: base_url.clone(),
         // URL of the OAuth 2.0 Authorization Endpoint
-        authorization_endpoint: format!("{}/auth", base_url),
+        authorization_endpoint: format!("{}/authorize", base_url),
         // URL of the OAuth 2.0 Token Endpoint
         token_endpoint: format!("{}/token", base_url),
         // URL of the UserInfo Endpoint

@@ -14,6 +14,6 @@ pub fn oidc_routes(config: Config) -> Router {
             get(crate::oidc::discovery::openid_configuration),
         )
         .with_state(config.oidc.clone())
-        .route("/auth", get(auth::authorize))
+        .route("/authorize", get(auth::authorize))
         .with_state(config.oidc.clone())
 }

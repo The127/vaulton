@@ -1,0 +1,17 @@
+### Test Authorization Endpoint - Success Case
+GET http://localhost:3000/authorize?
+    response_type=code&
+    client_id=test_client&
+    redirect_uri=http://localhost:8080/callback&
+    scope=openid profile&
+    state=abc123&
+    code_challenge=E9Melhoa2OwvFrEMTJguCHaoeK1t8URWbuGJSstw-cM&
+    code_challenge_method=S256
+Accept: application/json
+
+### Test Authorization Endpoint - Invalid Response Type
+GET http://localhost:3000/authorize?
+    response_type=invalid&
+    client_id=test_client&
+    redirect_uri=http://localhost:8080/callback
+Accept: application/json
