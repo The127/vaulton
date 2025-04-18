@@ -53,7 +53,14 @@ pub async fn authorize(
 
     let client_repository = state.module.resolve();
 
-    client_repository.find_by_id("test").await;
+    let client = match client_repository.find_by_id(&params.client_id).await {
+        Some(client) => client,
+        None => {
+            return OAuthError::InvalidClient("Client not found".to_string())
+                .to_redirect_response(&params.redirect_uri, params.state.as_deref());
+        }
+    };
+
 
     Redirect::temporary("/health")
 }

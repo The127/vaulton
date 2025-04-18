@@ -13,6 +13,7 @@ pub enum OAuthError {
     InvalidScope(String),
     ServerError(String),
     TemporarilyUnavailable(String),
+    InvalidClient(String),
 }
 
 impl fmt::Display for OAuthError {
@@ -25,6 +26,7 @@ impl fmt::Display for OAuthError {
             Self::InvalidScope(desc) => write!(f, "invalid_scope: {}", desc),
             Self::ServerError(desc) => write!(f, "server_error: {}", desc),
             Self::TemporarilyUnavailable(desc) => write!(f, "temporarily_unavailable: {}", desc),
+            Self::InvalidClient(desc) => write!(f, "invalid_client: {}", desc),       
         }
     }
 }
@@ -41,6 +43,7 @@ impl OAuthError {
             Self::InvalidScope(desc) => ("invalid_scope", desc),
             Self::ServerError(desc) => ("server_error", desc),
             Self::TemporarilyUnavailable(desc) => ("temporarily_unavailable", desc),
+            Self::InvalidClient(desc) => ("invalid_client", desc),       
         };
 
         url.query_pairs_mut()
