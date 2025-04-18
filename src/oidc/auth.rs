@@ -125,14 +125,14 @@ pub async fn authorize(
 }
 
 fn generate_request_id() -> String {
-    use rand::{thread_rng, Rng};
+    use rand::{rng, Rng};
     const CHARSET: &[u8] = b"ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789";
     const REQUEST_ID_LEN: usize = 32;
 
-    let mut rng = thread_rng();
+    let mut rng = rng();
     let request_id: String = (0..REQUEST_ID_LEN)
         .map(|_| {
-            let idx = rng.gen_range(0..CHARSET.len());
+            let idx = rng.random_range(0..CHARSET.len());
             CHARSET[idx] as char
         })
         .collect();
