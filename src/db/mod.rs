@@ -12,15 +12,13 @@ pub struct DatabaseImpl {
     pool: PgPool,
 }
 
-impl DatabaseImpl {
-    pub async fn new(config: &crate::config::PostgresConfig) -> Result<Self, sqlx::Error> {
-        let pool = PgPoolOptions::new()
-            .max_connections(5)
-            .acquire_timeout(Duration::from_secs(3))
-            .connect(&config.connection_string()).await?;
-            
-        Ok(Self { pool })
-    }
+pub async fn connect_to_db(config: &crate::config::PostgresConfig) -> Result<PgPool, sqlx::Error> {
+    let pool = PgPoolOptions::new()
+        .max_connections(5)
+        .acquire_timeout(Duration::from_secs(3))
+        .connect(&config.connection_string()).await?;
+
+    Ok(pool)
 }
 
 impl Database for DatabaseImpl {
