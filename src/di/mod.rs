@@ -9,7 +9,7 @@ module! {
     pub MyModule {
         components = [
             crate::db::DatabaseImpl,
-            crate::repository::client_repository::InMemoryClientRepository
+            crate::repository::client_repository::PostgresClientRepository
         ],
         providers = []
     }

@@ -7,7 +7,7 @@ use shaku::module;
 module! {
     pub OAuthModule {
         components = [
-            client_repository::InMemoryClientRepository,
+            client_repository::PostgresClientRepository,
             auth_request_repository::InMemoryAuthRequestRepository,
         ],
         providers = []

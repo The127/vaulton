@@ -18,27 +18,23 @@ pub trait ClientRepository: Interface {
 
 #[derive(Component)]
 #[shaku(interface = ClientRepository)]
-pub struct InMemoryClientRepository {
-    #[shaku(default)]
-    clients: Arc<RwLock<HashMap<String, Client>>>,
+pub struct PostgresClientRepository {
 }
 
-impl InMemoryClientRepository {
+impl PostgresClientRepository {
     fn new() -> Self {
         Self {
-            clients: Arc::new(RwLock::new(HashMap::new())),
         }
     }
 }
 
 #[async_trait]
-impl ClientRepository for InMemoryClientRepository {
+impl ClientRepository for PostgresClientRepository {
     async fn create(&self, params: CreateClientParams) -> Result<Client, String> {
         unimplemented!()
     }
 
     async fn find_by_id(&self, id: &str) -> Option<Client> {
-        let clients = self.clients.read().await;
-        clients.get(id).cloned()
+        unimplemented!()
     }
 }
