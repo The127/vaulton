@@ -44,6 +44,8 @@ pub struct Config {
     pub server: ServerConfig,
     #[serde(default)]
     pub oidc: OIDCConfig,
+    #[serde(default)]
+    pub postgres: PostgresConfig,
 }
 
 impl Default for Config {
@@ -51,15 +53,16 @@ impl Default for Config {
         Self {
             server: ServerConfig::default(),
             oidc: OIDCConfig::default(),
+            postgres: PostgresConfig::default(),
         }
     }
 }
 
-// Implement for Config
 impl Merge for Config {
     fn merge(&mut self, other: Self) {
         self.server.merge(other.server);
         self.oidc.merge(other.oidc);
+        self.postgres.merge(other.postgres);
     }
 }
 
@@ -120,6 +123,56 @@ impl Merge for OIDCConfig {
     }
 }
 
+/// Configuration for PostgreSQL database connection
+#[derive(Clone, Debug, Deserialize, ConfigMetadata)]
+pub struct PostgresConfig {
+    /// Database host address
+    pub host: Option<String>,
+    /// Database port
+    pub port: Option<u16>,
+    /// Database user
+    pub username: Option<String>,
+    /// Database password
+    pub password: Option<String>,
+    /// Database name
+    pub database: Option<String>,
+}
+
+impl Default for PostgresConfig {
+    fn default() -> Self {
+        Self {
+            host: Some("localhost".to_string()),
+            port: Some(5432),
+            username: Some("postgres".to_string()),
+            password: Some("secret".to_string()),
+            database: Some("oidc_server".to_string()),
+        }
+    }
+}
+
+impl PostgresConfig {
+    pub fn connection_string(&self) -> String {
+        format!(
+            "postgres://{}:{}@{}:{}/{}",
+            self.username.as_ref().unwrap(),
+            self.password.as_ref().unwrap(),
+            self.host.as_ref().unwrap(),
+            self.port.unwrap(),
+            self.database.as_ref().unwrap(),
+        )
+    }
+}
+
+impl Merge for PostgresConfig {
+    fn merge(&mut self, other: Self) {
+        self.host.merge(other.host);
+        self.port.merge(other.port);
+        self.username.merge(other.username);
+        self.password.merge(other.password);
+        self.database.merge(other.database);
+    }
+}
+
 
 /// Trait for loading static configuration from different sources
 pub trait ConfigSource {
@@ -163,6 +216,7 @@ mod tests {
             oidc: OIDCConfig {
                 external_url: Some("https://example.com".to_string()),
             },
+            postgres: PostgresConfig::default(),
         };
 
         base.merge(other);
