@@ -1,13 +1,13 @@
 mod health;
 
-use crate::oidc;
+use crate::{oidc, Config};
 
 use axum::{Router, routing::get};
 
-pub async fn create_server() -> Router {
+pub async fn create_server(config: Config) -> Router {
     // Create a new router with a single route
     Router::new()
         .route("/health", get(health::health_check))
-        .merge(oidc::discovery::discovery_routes())
+        .merge(oidc::discovery::discovery_routes(config))
 
 }

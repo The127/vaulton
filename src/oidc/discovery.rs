@@ -2,31 +2,38 @@
 //! Provides the OpenID Provider configuration information as specified in the OpenID Connect Discovery specification.
 
 use super::types::OpenIDConfiguration;
+use crate::Config;
+use crate::config::OIDCConfig;
+use axum::extract::State;
 use axum::{response::Json, routing::get, Router};
 
 /// Creates a router with OpenID Connect Discovery endpoint.
 /// Exposes the well-known OpenID configuration at /.well-known/openid-configuration
-pub fn discovery_routes() -> Router {
-    Router::new().route(
-        "/.well-known/openid-configuration",
-        get(openid_configuration),
-    )
+pub fn discovery_routes(config: Config) -> Router {
+    Router::new()
+        .route(
+            "/.well-known/openid-configuration",
+            get(openid_configuration),
+        )
+        .with_state(config.oidc)
 }
 
 /// Handles the OpenID Configuration endpoint request.
 /// Returns a JSON response containing the OpenID Provider configuration information.
-async fn openid_configuration() -> Json<OpenIDConfiguration> {
+async fn openid_configuration(State(config): State<OIDCConfig>) -> Json<OpenIDConfiguration> {
+    let base_url = config.external_url.unwrap();
+
     Json(OpenIDConfiguration {
         // The Issuer Identifier for the OpenID Provider
-        issuer: "http://localhost:3000".to_string(),
+        issuer: base_url.clone(),
         // URL of the OAuth 2.0 Authorization Endpoint
-        authorization_endpoint: "http://localhost:3000/auth".to_string(),
+        authorization_endpoint: format!("{}/auth", base_url),
         // URL of the OAuth 2.0 Token Endpoint
-        token_endpoint: "http://localhost:3000/token".to_string(),
+        token_endpoint: format!("{}/token", base_url),
         // URL of the UserInfo Endpoint
-        userinfo_endpoint: "http://localhost:3000/userinfo".to_string(),
+        userinfo_endpoint: format!("{}/userinfo", base_url),
         // URL of the JSON Web Key Set document
-        jwks_uri: "http://localhost:3000/jwks".to_string(),
+        jwks_uri: format!("{}/jwks", base_url),
         // List of OAuth 2.0 response_type values supported
         response_types_supported: vec!["code".to_string()],
         // List of subject identifier types supported

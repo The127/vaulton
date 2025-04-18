@@ -98,7 +98,7 @@ impl Merge for ServerConfig {
 }
 
 /// Configuration for OpenID Connect settings
-#[derive(Debug, Deserialize, ConfigMetadata)]
+#[derive(Clone, Debug, Deserialize, ConfigMetadata)]
 pub struct OIDCConfig {
     /// The external URL where this server is accessible
     /// This is used for generating URLs in OIDC discovery document

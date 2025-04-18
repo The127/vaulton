@@ -28,7 +28,7 @@ async fn main() {
     let port = config.server.port.unwrap();
     let addr = format!("{}:{}", bind_addr, port);
     
-    let app = vaulton::server::create_server().await;
+    let app = vaulton::server::create_server(config).await;
     let listener = tokio::net::TcpListener::bind(&addr).await.unwrap_or_else(|e| {
         eprintln!("Failed to bind to {}: {}", addr, e);
         std::process::exit(1);
