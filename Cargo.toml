@@ -3,6 +3,15 @@ name = "vaulton"
 version = "0.1.0"
 edition = "2021"
 
+[lib]
+name = "vaulton"
+path = "src/lib.rs"
+
+[[bin]]
+name = "vaulton"
+path = "src/main.rs"
+
+
 [dependencies]
 tokio = { version = "1.0", features = ["full"] }
 serde = { version = "1.0", features = ["derive"] }
