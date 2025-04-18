@@ -6,6 +6,7 @@ use axum::{
     response::Redirect,
 };
 use serde::Deserialize;
+use super::error::OAuthError;
 
 /// Represents an OpenID Connect authorization request.
 /// Contains the parameters required for initiating the authentication flow.
@@ -30,6 +31,20 @@ pub struct AuthRequest {
 /// Handles the authorization request and initiates the authentication flow.
 /// Returns a redirect to either the login page or the error page depending on the validation result.
 pub async fn authorize(Query(params): Query<AuthRequest>) -> Redirect {
-    // TODO: Implement authorization flow
-    todo!()
+    if params.response_type != "code" {
+        return OAuthError::UnsupportedResponseType(
+            "Only 'code' response type is supported".to_string()
+        ).to_redirect_response(&params.redirect_uri, params.state.as_deref());
+    }
+
+    if let Some(method) = &params.code_challenge_method {
+        if method != "S256" {
+            return OAuthError::InvalidRequest(
+                "Only 'S256' code challenge method is supported".to_string()
+            ).to_redirect_response(&params.redirect_uri, params.state.as_deref());
+        }
+    }
+
+    todo!("Implement authorization flow")
+
 }
