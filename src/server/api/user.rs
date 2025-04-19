@@ -44,7 +44,6 @@ pub async fn create_user(
 
     let user_repository: Arc<dyn UserRepository> = state.module.resolve();
 
-    // Get user repository from state and create user
     match user_repository.create(create_params).await {
         Ok(user) => {
             let response = UserResponseDto {

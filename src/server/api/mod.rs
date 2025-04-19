@@ -3,6 +3,7 @@ use axum::routing::post;
 use crate::server::AppState;
 
 pub mod user;
+pub mod client;
 
 pub fn api_routes(app_state: AppState) -> Router {
     Router::new()
