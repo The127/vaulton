@@ -11,8 +11,8 @@ module! {
             crate::db::DatabaseImpl,
             crate::repository::client_repository::PostgresClientRepository,
             crate::repository::user_repository::PostgresUserRepository,
-            crate::repository::auth_request_repository::InMemoryAuthRequestRepository,
-        ],
+            crate::repository::roles_repository::PostgresRoleRepository,
+            crate::repository::auth_request_repository::InMemoryAuthRequestRepository,        ],
         providers = []
     }
 }
