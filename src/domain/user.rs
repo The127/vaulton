@@ -3,7 +3,7 @@ use uuid::Uuid;
 
 #[derive(Debug, Clone)]
 pub struct User {
-    pub id: Uuid,
+    pub uuid: Uuid,
     pub username: String,
     pub password_hash: Vec<u8>,
     pub email: String,

@@ -1,12 +1,14 @@
 use std::sync::Arc;
 // src/repositories/user_repository.rs
+use crate::db::Database;
+use crate::domain::user::User;
 use async_trait::async_trait;
 use shaku::{Component, Interface};
-use crate::db::Database;
-use crate::domain::user::{User};
 
 pub struct CreateUserParams {
-
+    pub username: String,
+    pub password_hash: Vec<u8>,
+    pub email: String,
 }
 
 #[async_trait]
@@ -30,6 +32,27 @@ impl PostgresUserRepository {
 #[async_trait]
 impl UserRepository for PostgresUserRepository {
     async fn create(&self, params: CreateUserParams) -> Result<User, String> {
-        unimplemented!()
+        let result = sqlx::query!(
+            r#"
+            insert into users(username, password_hash, email)
+            values($1, $2, $3)
+            returning *;
+            "#,
+            params.username,
+            params.password_hash,
+            params.email,
+        )
+        .fetch_one(self.pool.get_pool())
+        .await
+        .map_err(|e| e.to_string())?;
+
+        Ok(User{
+            uuid: result.id,
+            username: result.username,
+            password_hash: result.password_hash,
+            email: result.email,
+            created_at: result.created_at,
+            updated_at: result.updated_at,
+        })
     }
 }

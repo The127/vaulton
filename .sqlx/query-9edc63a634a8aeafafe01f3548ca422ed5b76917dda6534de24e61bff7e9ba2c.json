@@ -1,6 +1,6 @@
 {
   "db_name": "PostgreSQL",
-  "query": "\n            insert into clients(client_id, client_secret_hash, redirect_uris, scopes)\n            values ($1, $2, $3, $4)\n            returning *;\n            ",
+  "query": "\n            insert into users(username, password_hash, email)\n            values($1, $2, $3)\n            returning *;\n            ",
   "describe": {
     "columns": [
       {
@@ -10,31 +10,26 @@
       },
       {
         "ordinal": 1,
-        "name": "client_id",
+        "name": "username",
         "type_info": "Text"
       },
       {
         "ordinal": 2,
-        "name": "client_secret_hash",
+        "name": "password_hash",
         "type_info": "Bytea"
       },
       {
         "ordinal": 3,
-        "name": "redirect_uris",
-        "type_info": "TextArray"
+        "name": "email",
+        "type_info": "Text"
       },
       {
         "ordinal": 4,
-        "name": "scopes",
-        "type_info": "TextArray"
-      },
-      {
-        "ordinal": 5,
         "name": "created_at",
         "type_info": "Timestamptz"
       },
       {
-        "ordinal": 6,
+        "ordinal": 5,
         "name": "updated_at",
         "type_info": "Timestamptz"
       }
@@ -43,19 +38,17 @@
       "Left": [
         "Text",
         "Bytea",
-        "TextArray",
-        "TextArray"
+        "Text"
       ]
     },
     "nullable": [
       false,
       false,
-      true,
-      true,
-      true,
+      false,
+      false,
       false,
       false
     ]
   },
-  "hash": "fe02811b9cb58a7a63b52192802bad0523498889adda067516de26439a354dd5"
+  "hash": "9edc63a634a8aeafafe01f3548ca422ed5b76917dda6534de24e61bff7e9ba2c"
 }
