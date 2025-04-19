@@ -7,7 +7,7 @@ use shaku::{Component, Interface};
 
 pub struct CreateUserParams {
     pub username: String,
-    pub password_hash: Vec<u8>,
+    pub password_hash: String,
     pub email: String,
 }
 
@@ -40,7 +40,7 @@ impl UserRepository for PostgresUserRepository {
             returning *;
             "#,
             params.username,
-            params.password_hash,
+            params.password_hash.clone(),
             params.email,
         )
         .fetch_one(self.pool.get_pool())
@@ -62,7 +62,7 @@ impl UserRepository for PostgresUserRepository {
             r#"
             select * from users where username = $1 or email = lower($1);
             "#,
-            username_or_email,
+            username_or_email.clone(),
         )
             .fetch_optional(self.pool.get_pool())
             .await

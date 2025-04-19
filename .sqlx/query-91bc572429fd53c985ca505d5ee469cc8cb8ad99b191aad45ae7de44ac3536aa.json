@@ -16,7 +16,7 @@
       {
         "ordinal": 2,
         "name": "password_hash",
-        "type_info": "Bytea"
+        "type_info": "Text"
       },
       {
         "ordinal": 3,
@@ -37,7 +37,7 @@
     "parameters": {
       "Left": [
         "Text",
-        "Bytea",
+        "Text",
         "Text"
       ]
     },
