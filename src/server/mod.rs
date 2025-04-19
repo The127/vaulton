@@ -1,4 +1,5 @@
 mod health;
+mod api;
 
 use std::sync::Arc;
 use crate::{oidc, Config};
@@ -32,8 +33,8 @@ pub async fn create_server(config: Config) -> Router {
         config,
     };
 
-    // Create a new router with a single route
     Router::new()
         .route("/health", get(health::health_check))
-        .merge(oidc::oidc_routes(state))
+        .merge(oidc::oidc_routes(state.clone()))
+        .merge(api::api_routes(state.clone()))
 }

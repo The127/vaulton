@@ -1,0 +1,9 @@
+# create a user
+POST localhost:3000/api/users
+Content-Type: application/json
+
+{
+  "username": "admin",
+  "email": "admin@home.arpa",
+  "password": "supersecret"
+}

@@ -12,7 +12,7 @@ pub fn oidc_routes(app_state: AppState) -> Router {
     Router::new()
         .route(
             "/.well-known/openid-configuration",
-            get(crate::oidc::discovery::openid_configuration),
+            get(discovery::openid_configuration),
         )
         .with_state(app_state.clone())
         .route("/authorize", get(auth::authorize))
