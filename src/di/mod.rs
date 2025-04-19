@@ -10,6 +10,7 @@ module! {
         components = [
             crate::db::DatabaseImpl,
             crate::repository::client_repository::PostgresClientRepository,
+            crate::repository::user_repository::PostgresUserRepository,
             crate::repository::auth_request_repository::InMemoryAuthRequestRepository,
         ],
         providers = []
