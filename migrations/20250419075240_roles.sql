@@ -1,51 +1,46 @@
--- Create roles table
-CREATE TABLE roles
-(
-    id          UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-    name        TEXT NOT NULL UNIQUE,
-    description TEXT,
-    created_at  TIMESTAMPTZ NOT NULL DEFAULT CURRENT_TIMESTAMP,
-    updated_at  TIMESTAMPTZ NOT NULL DEFAULT CURRENT_TIMESTAMP
+create table roles (
+    id uuid primary key default gen_random_uuid(),
+    name text not null unique,
+    description text,
+    created_at timestamptz not null default current_timestamp,
+    updated_at timestamptz not null default current_timestamp
 );
 
--- Create user_roles mapping table
-CREATE TABLE user_roles
-(
-    user_id    UUID REFERENCES users(id) ON DELETE CASCADE,
-    role_id    UUID REFERENCES roles(id) ON DELETE CASCADE,
-    created_at TIMESTAMPTZ NOT NULL DEFAULT CURRENT_TIMESTAMP,
-    updated_at TIMESTAMPTZ NOT NULL DEFAULT CURRENT_TIMESTAMP,
-    PRIMARY KEY (user_id, role_id)
+create table user_roles (
+    user_id uuid references users(id) on delete cascade,
+    role_id uuid references roles(id) on delete cascade,
+    created_at timestamptz not null default current_timestamp,
+    updated_at timestamptz not null default current_timestamp,
+    primary key (user_id, role_id)
 );
 
--- Create indexes
-CREATE INDEX idx_roles_name ON roles (name);
-CREATE INDEX idx_user_roles_user_id ON user_roles (user_id);
-CREATE INDEX idx_user_roles_role_id ON user_roles (role_id);
+-- indexes
+create index idx_roles_name on roles (name);
+create index idx_user_roles_user_id on user_roles (user_id);
+create index idx_user_roles_role_id on user_roles (role_id);
 
--- Triggers for roles table
-CREATE TRIGGER set_roles_timestamps
-    BEFORE INSERT ON roles
-    FOR EACH ROW
-EXECUTE FUNCTION set_created_at_column();
+-- triggers
+create trigger set_roles_timestamps
+    before insert on roles
+    for each row
+execute function set_created_at_column();
 
-CREATE TRIGGER update_roles_updated_at
-    BEFORE UPDATE ON roles
-    FOR EACH ROW
-EXECUTE FUNCTION update_updated_at_column();
+create trigger update_roles_updated_at
+    before update on roles
+    for each row
+execute function update_updated_at_column();
 
--- Triggers for user_roles table
-CREATE TRIGGER set_user_roles_timestamps
-    BEFORE INSERT ON user_roles
-    FOR EACH ROW
-EXECUTE FUNCTION set_created_at_column();
+create trigger set_user_roles_timestamps
+    before insert on user_roles
+    for each row
+execute function set_created_at_column();
 
-CREATE TRIGGER update_user_roles_updated_at
-    BEFORE UPDATE ON user_roles
-    FOR EACH ROW
-EXECUTE FUNCTION update_updated_at_column();
+create trigger update_user_roles_updated_at
+    before update on user_roles
+    for each row
+execute function update_updated_at_column();
 
--- Insert default roles
-INSERT INTO roles (name, description)
-VALUES ('admin', 'Full system access'),
+-- default roles
+insert into roles (name, description)
+values ('admin', 'Full system access'),
        ('user', 'Standard user access');

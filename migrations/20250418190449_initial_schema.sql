@@ -1,46 +1,58 @@
-create table roles (
-    id uuid primary key default gen_random_uuid(),
-    name text not null unique,
-    description text,
-    created_at timestamptz not null default current_timestamp,
-    updated_at timestamptz not null default current_timestamp
+-- migrations/20250418190449_initial_schema.sql
+
+-- enable uuid generation
+create
+extension if not exists "uuid-ossp";
+
+-- timestamp management functions
+create
+or replace function update_updated_at_column()
+returns trigger as $$
+begin
+    new.updated_at
+= now();
+return new;
+end;
+$$
+language 'plpgsql';
+
+create
+or replace function set_created_at_column()
+returns trigger as $$
+begin
+    new.created_at
+= now();
+    new.updated_at
+= now();
+return new;
+end;
+$$
+language 'plpgsql';
+
+-- clients table to store oidc client applications
+create table clients
+(
+    id                 uuid primary key default uuid_generate_v4(),
+    client_id          text unique not null,
+    client_secret_hash bytea,
+    redirect_uris      text[],
+    scopes             text[],
+    created_at         timestamptz not null,
+    updated_at         timestamptz not null
 );
 
-create table user_roles (
-    user_id uuid references users(id) on delete cascade,
-    role_id uuid references roles(id) on delete cascade,
-    created_at timestamptz not null default current_timestamp,
-    updated_at timestamptz not null default current_timestamp,
-    primary key (user_id, role_id)
-);
-
--- indexes
-create index idx_roles_name on roles (name);
-create index idx_user_roles_user_id on user_roles (user_id);
-create index idx_user_roles_role_id on user_roles (role_id);
-
--- triggers
-create trigger set_roles_timestamps
-    before insert on roles
+-- Trigger for new records
+create trigger set_clients_timestamps
+    before insert
+    on clients
     for each row
-execute function set_created_at_column();
+    execute function set_created_at_column();
 
-create trigger update_roles_updated_at
-    before update on roles
+-- Trigger for updated records
+create trigger update_clients_updated_at
+    before update
+    on clients
     for each row
-execute function update_updated_at_column();
+    execute function update_updated_at_column();
 
-create trigger set_user_roles_timestamps
-    before insert on user_roles
-    for each row
-execute function set_created_at_column();
-
-create trigger update_user_roles_updated_at
-    before update on user_roles
-    for each row
-execute function update_updated_at_column();
-
--- default roles
-insert into roles (name, description)
-values ('admin', 'Full system access'),
-       ('user', 'Standard user access');
+create index idx_clients_client_id on clients (client_id);
