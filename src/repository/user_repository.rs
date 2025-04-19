@@ -36,7 +36,7 @@ impl UserRepository for PostgresUserRepository {
         let result = sqlx::query!(
             r#"
             insert into users(username, password_hash, email)
-            values($1, $2, $3)
+            values($1, $2, lower($3))
             returning *;
             "#,
             params.username,
@@ -60,7 +60,7 @@ impl UserRepository for PostgresUserRepository {
     async fn find_by_username_or_email(&self, username_or_email: &str) -> Option<User> {
         let result = sqlx::query!(
             r#"
-            select * from users where username = $1 or email = $1;
+            select * from users where username = $1 or email = lower($1);
             "#,
             username_or_email,
         )

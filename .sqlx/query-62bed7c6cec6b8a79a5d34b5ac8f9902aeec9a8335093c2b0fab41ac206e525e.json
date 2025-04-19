@@ -1,6 +1,6 @@
 {
   "db_name": "PostgreSQL",
-  "query": "\n            insert into users(username, password_hash, email)\n            values($1, $2, $3)\n            returning *;\n            ",
+  "query": "\n            select * from users where username = $1 or email = lower($1);\n            ",
   "describe": {
     "columns": [
       {
@@ -36,8 +36,6 @@
     ],
     "parameters": {
       "Left": [
-        "Text",
-        "Bytea",
         "Text"
       ]
     },
@@ -50,5 +48,5 @@
       false
     ]
   },
-  "hash": "9edc63a634a8aeafafe01f3548ca422ed5b76917dda6534de24e61bff7e9ba2c"
+  "hash": "62bed7c6cec6b8a79a5d34b5ac8f9902aeec9a8335093c2b0fab41ac206e525e"
 }
