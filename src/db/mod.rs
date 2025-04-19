@@ -18,6 +18,13 @@ pub async fn connect_to_db(config: &crate::config::PostgresConfig) -> Result<PgP
         .acquire_timeout(Duration::from_secs(3))
         .connect(&config.connection_string()).await?;
 
+    sqlx::migrate!("./migrations")
+        .run(&pool)
+        .await
+        .expect(
+            "Failed to run migrations",
+        );
+
     Ok(pool)
 }
 
