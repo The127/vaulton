@@ -14,6 +14,7 @@ pub struct CreateUserParams {
 #[async_trait]
 pub trait UserRepository: Interface {
     async fn create(&self, params: CreateUserParams) -> Result<User, String>;
+    async fn find_by_username_or_email(&self, username_or_email: &str) -> Option<User>;
 }
 
 #[derive(Component)]
@@ -47,6 +48,28 @@ impl UserRepository for PostgresUserRepository {
         .map_err(|e| e.to_string())?;
 
         Ok(User{
+            uuid: result.id,
+            username: result.username,
+            password_hash: result.password_hash,
+            email: result.email,
+            created_at: result.created_at,
+            updated_at: result.updated_at,
+        })
+    }
+
+    async fn find_by_username_or_email(&self, username_or_email: &str) -> Option<User> {
+        let result = sqlx::query!(
+            r#"
+            select * from users where username = $1 or email = $1;
+            "#,
+            username_or_email,
+        )
+            .fetch_optional(self.pool.get_pool())
+            .await
+            .ok()??;
+
+
+        Some(User{
             uuid: result.id,
             username: result.username,
             password_hash: result.password_hash,
