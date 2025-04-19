@@ -1,2 +1,2 @@
 pub mod client;
-mod user;
+pub mod user;
